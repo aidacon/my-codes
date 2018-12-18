@@ -1,0 +1,85 @@
+<?php
+
+session_start();
+
+require 'vendor/autoload.php';
+
+if (! isset($_SESSION['auth']) && $_SERVER['REQUEST_URI'] != '/login') {
+    header('Location: /login');
+    return;
+}
+
+$dispatcher = FastRoute\simpleDispatcher(function($r) {
+    $r->addRoute('GET', '/', function(){
+        $controller = new App\Controller\Main();
+        $controller->run();
+    });
+    $r->addRoute(['GET', 'POST'], '/login', function(){
+        $controller = new App\Controller\Login();
+        $controller->run();
+    });
+
+    $r->addRoute(['GET', 'POST'], '/users', function(){
+        $controller = new App\Controller\Users();
+        $controller->run();
+    });
+
+    $r->addRoute(['GET', 'POST'], '/users/add', function(){
+        $controller = new App\Controller\Users();
+        $controller->runAdd();
+    });
+
+    $r->addRoute(['GET', 'POST'], '/users/edit', function(){
+        $controller = new App\Controller\Users();
+        $controller->runEdit();
+    });
+
+    $r->addRoute(['GET', 'POST'], '/users/delete', function(){
+        $controller = new App\Controller\Users();
+        $controller->runDelete();
+    });
+
+    $r->addRoute(['GET', 'POST'], '/tasks', function(){
+        $controller = new App\Controller\Tasks();
+        $controller->run();
+    });
+
+    $r->addRoute(['GET', 'POST'], '/tasks/edit', function(){
+        $controller = new App\Controller\Tasks();
+        $controller->runEdit();
+    });
+
+    $r->addRoute(['GET', 'POST'], '/tasks/delete', function(){
+        $controller = new App\Controller\Tasks();
+        $controller->runDelete();
+    });
+
+
+   
+});
+
+// Fetch method and URI from somewhere
+$httpMethod = $_SERVER['REQUEST_METHOD'];
+$uri = $_SERVER['REQUEST_URI'];
+
+// Strip query string (?foo=bar) and decode URI
+if (false !== $pos = strpos($uri, '?')) {
+    $uri = substr($uri, 0, $pos);
+}
+$uri = rawurldecode($uri);
+
+$routeInfo = $dispatcher->dispatch($httpMethod, $uri);
+switch ($routeInfo[0]) {
+    case FastRoute\Dispatcher::NOT_FOUND:
+        echo '404 - роут не найден';
+        break;
+    case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
+        $allowedMethods = $routeInfo[1];
+        // ... 405 Method Not Allowed
+        break;
+    case FastRoute\Dispatcher::FOUND:
+        $handler = $routeInfo[1];
+        $vars = $routeInfo[2];
+        $handler();
+        break;
+}
