@@ -35,3 +35,301 @@ class Login
         $view->render();
     }
 }
+
+--------------------------------------------------------------
+
+<?php
+
+namespace App\Controller;
+
+class Main
+{
+    public function run()
+    {
+        $view = new \App\View\Main();
+        $view->render();
+    }
+}
+
+-----------------------------------------------
+<?php
+
+namespace App\Controller;
+
+class Tasks
+{
+    public function run()
+    {
+        $db = \App\Service\DB::get();
+        $stmt = $db->prepare("
+            SELECT
+                *
+            FROM
+            `todolist`
+        
+        ");
+        $stmt->execute();
+
+        $view = new \App\View\Tasks();
+        $view->render([
+            'data' => $stmt->fetchAll()
+        ]);
+    }
+
+    public function runAdd()
+    {
+        if ($_POST) {
+            
+            $db = \App\Service\DB::get();
+            $stmt = $db->prepare("
+                INSERT INTO
+                    `todolist` (
+                        `id_user`,
+                        `title`,
+                        `description`,
+                        `date_start`,
+                        `date_end`,
+                        `status`
+                    ) VALUES (
+                        :id_user,
+                        :title,
+                        :description,
+                        :date_start,
+                        :date_end,
+                        :status
+
+                    )
+            ");
+
+            $stmt->execute([
+                ':title' => $_POST['title'],
+                ':description' => $_POST['description'],
+                ':date_start' => strtotime($_POST['date_start']),
+                ':date_end' => strtotime($_POST['date_end']),
+                ':status' => 0
+            ]);
+
+            header('Location: /tasks');
+            return;
+        }
+
+        $view = new \App\View\Tasks\Form();
+        $view->render();
+    }
+
+    public function runEdit()
+    {
+        if ($_POST) {
+            $db = \App\Service\DB::get();
+                $stmt = $db->prepare("
+                    UPDATE
+                        `todolist`
+                    SET
+                        `title` = :email,
+                        `description` = :name,
+                        `date_start` = :date_start,
+                        `date_end` = :date_end,
+                        `status` = :status
+                    WHERE
+                        `id` = :id
+                ");
+                $stmt->execute([
+                    ':title' => $_POST['title'],
+                    ':description' => $_POST['description'],
+                    ':date_start' => strtotime($_POST['date_start']),
+                    ':date_end' => strtotime($_POST['date_end']),
+                    ':status' => 0
+                ]);
+            } else {
+                $stmt = $db->prepare("
+                    UPDATE
+                        `todolist`
+                    SET
+                    `title` = :email,
+                    `description` = :name,
+                    `date_start` = :date_start,
+                    `date_end` = :date_end,
+                    `status` = :status
+                    WHERE
+                        `id` = :id
+                ");
+                $stmt->execute([
+                    ':title' => $_POST['title'],
+                    ':description' => $_POST['description'],
+                    ':date_start' => strtotime($_POST['date_start']),
+                    ':date_end' => strtotime($_POST['date_end']),
+                    ':status' => 0
+                ]);
+            }
+
+            header('Location: /tasks');
+            return;
+        
+        $db = \App\Service\DB::get();
+        $stmt = $db->prepare("
+        SELECT
+            *
+        FROM
+            `todolist`
+        WHERE
+            `id` = :id
+        ");
+        $stmt->execute([
+            ':id' => $_GET['id']
+        ]);
+
+        $view = new \App\View\Tasks\Form();
+        $view->render([
+            'data' => $stmt->fetch()
+        ]);
+    }
+    public function runDelete()
+    {
+        $db = \App\Service\DB::get();
+        $stmt = $db->prepare("
+            DELETE FROM
+                `todolist`
+            WHERE
+                `id` = :id
+        ");
+        $stmt->execute([
+            ':id' => $_GET['id']
+        ]); 
+        header('Location: /tasks');
+        return;
+    }
+}
+
+-----------------------------------------------------
+
+<?php
+
+namespace App\Controller;
+
+class Users
+{
+    public function run()
+    {
+        $db = \App\Service\DB::get();
+        $stmt = $db->prepare("
+            SELECT
+                *
+            FROM
+            `Users`
+        
+        ");
+        $stmt->execute();
+
+        $view = new \App\View\Users();
+        $view->render([
+            'data' => $stmt->fetchAll()
+        ]);
+    }
+
+    public function runAdd()
+    {
+        if ($_POST) {
+            
+            $db = \App\Service\DB::get();
+            $stmt = $db->prepare("
+                INSERT INTO
+                    `Users` (
+                        `email`,
+                        `password`,
+                        `name`
+                    ) VALUES (
+                        :email,
+                        :password,
+                        :name
+                    )
+            ");
+
+            $stmt->execute([
+                ':email' => $_POST['email'],
+                ':password' => sha1 ($_POST['password']),
+                ':name' => $_POST['name']
+            ]);
+
+            header('Location: /users');
+            return;
+        }
+
+        $view = new \App\View\Users\Form();
+        $view->render();
+    }
+
+    public function runEdit()
+    {
+        if ($_POST) {
+            $db = \App\Service\DB::get();
+            if ($_POST['password']) {
+                $stmt = $db->prepare("
+                    UPDATE
+                        `Users`
+                    SET
+                        `email` = :email,
+                        `name` = :name,
+                        `password` = :password
+                    WHERE
+                        `id` = :id
+                ");
+                $stmt->execute([
+                    ':email' => $_POST['email'],
+                    ':name' => $_POST['name'],
+                    ':password' => sha1($_POST['password']),
+                    ':id' => $_GET['id']
+                ]);
+            } else {
+                $stmt = $db->prepare("
+                    UPDATE
+                        `Users`
+                    SET
+                        `email` = :email,
+                        `name` = :name
+                    WHERE
+                        `id` = :id
+                ");
+                $stmt->execute([
+                    ':email' => $_POST['email'],
+                    ':name' => $_POST['name'],
+                    ':id' => $_GET['id']
+                ]);
+            }
+
+            header('Location: /users');
+            return;
+        }
+        $db = \App\Service\DB::get();
+        $stmt = $db->prepare("
+        SELECT
+            *
+        FROM
+            `Users`
+        WHERE
+            `id` = :id
+        ");
+        $stmt->execute([
+            ':id' => $_GET['id']
+        ]);
+
+        $view = new \App\View\Users\Form();
+        $view->render([
+            'data' => $stmt->fetch()
+        ]);
+    }
+    public function runDelete()
+    {
+        $db = \App\Service\DB::get();
+        $stmt = $db->prepare("
+            DELETE FROM
+                `Users`
+            WHERE
+                `id` = :id
+        ");
+        $stmt->execute([
+            ':id' => $_GET['id']
+        ]); 
+        header('Location: /users');
+        return;
+    }
+}
