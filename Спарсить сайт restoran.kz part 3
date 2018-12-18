@@ -1,0 +1,118 @@
+вывод кода на браузер
+
+<?php
+include 'functions.php';
+
+$maxPage = getMaxPage(25);
+$rests = [];
+for ($i=1; $i<=$maxPage; $i++) {
+    $restsFP = getRestsFromPage($i);
+    $rests = array_merge($rests, $restsFP);
+}
+
+$cuisines = [];
+foreach ($rests as $rest) {
+    $cuisines = array_merge($cuisines, $rest['cuisine']);
+}
+$cuisines = array_unique($cuisines);
+print_r($cuisines);
+$host = '127.0.0.1';
+$db   = 'cg_16_restaurants';
+$user = 'admin';
+$pass = '1q2w3e4r';
+$charset = 'utf8';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$opt = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
+
+$pdo = new PDO($dsn, $user, $pass, $opt);
+
+#очищаем таблицу перед загрузкой данных
+$stmt = $pdo->prepare("TRUNCATE `cuisines`");
+$stmt->execute();
+
+$stmt = $pdo->prepare("
+    INSERT INTO
+        `cuisines` (
+            `name`
+        ) VALUES (
+            :cuisine
+        )
+");
+
+$cuisinesMap = [];
+
+foreach ($cuisines as $cuisine) {
+    $stmt->execute([
+        ':cuisine' => $cuisine
+    ]);
+    $cuisinesMap[$cuisine] = $pdo->lastInsertId();
+}
+
+print_r($cuisinesMap);
+
+#очищаем таблицу перед загрузкой данных
+$stmt = $pdo->prepare("TRUNCATE `restaurants`");
+$stmt->execute();
+
+#очищаем таблицу перед загрузкой данных
+$stmt = $pdo->prepare("TRUNCATE `restaurants_cuisines`");
+$stmt->execute();
+
+$stmt = $pdo->prepare("
+    INSERT INTO 
+        `restaurants` (
+            `name`,
+            `link`,
+            `price_min`,
+            `price_max`,
+            `worktime`,
+            `address`
+        ) VALUES (
+            :name,
+            :link,
+            :price_min,
+            :price_max,
+            :worktime,
+            :address
+        )
+");
+
+
+
+foreach ($rests as $rest) {
+    $stmt->execute([
+        ':name' => $rest['name'],
+        ':link' => $rest['link'],
+        ':price_min' => $rest['price_min'],
+        ':price_max' => $rest['price_max'],
+        ':worktime' => $rest['worktime'],
+        ':address' => $rest['address']
+    ]);
+
+    $restId = $pdo->lastInsertId();
+
+    foreach ($rest['cuisine'] as $cuisine) {
+        $stmt2 = $pdo->prepare("
+        INSERT INTO 
+            `restaurants_cuisines` (
+                `id_R`,
+                `id_C`
+            ) VALUES (
+                :id_R,
+                :id_C
+            )    
+        ");
+        $stmt2->execute([
+            ':id_R' => $restId,
+            ':id_C' => $cuisinesMap[$cuisine]
+        ]);
+    }
+}
+
+print_r($rests);
+
