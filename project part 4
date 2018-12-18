@@ -1,0 +1,55 @@
+<?php
+namespace App\View\Users;
+
+class Form extends \App\View\Main
+{
+    public function content($data = [])
+    {
+        var_dump($data);
+        ?>
+            <div class="block">
+                                <div class="block-header">
+                                    <ul class="block-options">
+                                        <li>
+                                            <button type="button"><i class="si si-settings"></i></button>
+                                        </li>
+                                    </ul>
+                                    <h3 class="block-title"><?= isset($data['data']) ? 'Edit User' : 'Create User' ?></h3>
+                                </div>
+                                <div class="block-content block-content-narrow">
+                                    <form class="form-horizontal push-10-t" action="<?= isset($data['data']) ? '/users/edit?id=' . $data['data']['id'] : '/users/add' ?>" method="post">
+                                        <div class="form-group">
+                                            <div class="col-sm-6">
+                                                <div class="form-material">
+                                                    <input class="form-control" type="text" id="material-text" name="email" placeholder="Please enter your email" value="<?= isset($data['data']) ? $data['data']['email'] : '' ?>">
+                                                    <label for="material-text">Email</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-6">
+                                                <div class="form-material">
+                                                    <input class="form-control" type="password" id="material-text" name="password" placeholder="Please enter your password">
+                                                    <label for="material-text">Password</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-6">
+                                                <div class="form-material">
+                                                    <input class="form-control" type="text" id="material-text" name="name" placeholder="Please enter your Name" value="<?= isset($data['data']) ? $data['data']['name'] : '' ?>">
+                                                    <label for="material-text">Name</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-6">
+                                                <button class="btn btn-sm btn-primary" type="submit"><?= isset($data['data']) ? 'Save' : 'Add' ?></button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+        <?php
+    }
+}
