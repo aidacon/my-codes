@@ -1,0 +1,85 @@
+Домашнее задание. Интенсив 6-7. Кукольный театр.
+1. ТЗ: необходимо построить архитектуру приложения "Кукольный театр". 
+Субъекты кукольного театра: 
+    1. Кукловод
+        имеет свойства: пол, тип голоса, талант (1-10), куклы.
+        умеет: запускать выступление куклы.
+    2. Кукла
+        имеет свойтсва: тип, пол, возраст, цвет.
+        умеет: выступать
+    3. Постановка
+        имеет свойства: кукловоды
+        умеет: запускать выступление Кукловода
+    4. Зритель.
+        умеет: аплодировать.
+    5. Сцена
+        свойства: Постановка, Зрители.
+        умеет: запускать Постановку.
+
+2. Собрать кукольный театр и запустить представление.
+--------------------------------------------------------------
+ответ:
+<?php
+
+class kukla
+{
+    public $type = '';
+    public $gender = '';
+    public $age = '';
+    public $color = '';
+
+public function __construct($type,$gender,$age,$color)
+{
+    $this->type=$type;
+    $this->gender=$gender;
+    $this->age=$age;
+    $this->color=$color;
+}
+}
+
+class kuklovod extends kukla
+{
+    protected $access='Кукловод';
+    public $gender = '';
+    public $type = '';
+    public $talant = '';
+
+    public function __construct($name,$gender,$type,$talant)
+{
+    $this->name=$name;
+    $this->gender=$gender;
+    $this->type=$type;
+    $this->talant=$talant;
+}
+    function sayHello($kukla)
+    {
+        echo 'Всем привет! Меня зовут '. $kukla->type .' мне '. $kukla->age .'! Мой цвет - ' . $kukla->color . ' И я - ' . $kukla->gender . '!<br>';
+        echo 'Я выступаю под руководством кукловода '. $this->name.'!<br>';
+        echo 'Мой хозяин - кукловод '. $this->gender.'!<br>';
+    }
+}
+
+class zritel 
+{
+    private $do =[
+        0 => 'браво браво'.'!<br>',
+        1 => 'визг!'.'!<br>',
+        2 =>'хлоп хлоп'.'!<br>'
+    ];
+    public function aplodirovat()
+    {
+        echo $this->do[rand(0,2)];
+    }
+}
+
+$aidana = new kukla('Айдана', 'женщина', 26, 'черный');
+$baha = new kuklovod('Баха','Мужчина', 'грозный', 'гений');
+$zritel = new zritel('Зритель');
+
+$baha->sayHello($aidana);
+$zritel->aplodirovat();
+
+for($i=0;$i<10;$i++){
+    $zritel = new zritel();
+    $zritel->aplodirovat();
+}
